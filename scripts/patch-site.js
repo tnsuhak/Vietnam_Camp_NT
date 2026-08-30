@@ -2,8 +2,16 @@ const fs=require('fs');
 const FILE='index.html';
 const CANON='https://vietnam-camp-hcmc.netlify.app/nhatrang.html';
 function rep(s,a,b,label,all=false){if(!s.includes(a))throw new Error('Missing patch target: '+label);return all?s.split(a).join(b):s.replace(a,b)}
+function clarifyCampHeader(h){
+  h=h.replace(/2027 WINTER(?! CAMP)/g,'2027 WINTER CAMP');
+  h=h.replace(/2027\s*<em>Winter<\/em>/g,'2027 <em>Winter Camp</em>');
+  h=h.replace(/2027 Winter(?! Camp)/g,'2027 Winter Camp');
+  h=h.replace(/>\s*호치민 캠프\s*→\s*</g,'>호치민 캠프도 보기 →<');
+  return h;
+}
 let h=fs.readFileSync(FILE,'utf8');
 h=rep(h,'https://YOUR-DOMAIN-HERE/nhatrang.html',CANON,'canonical',true);
+h=clarifyCampHeader(h);
 h=rep(h,'08:30 ~ 16:45','08:30 ~ 16:30','AVE schedule',true);
 h=rep(h,'08:30 ~ 15:40','08:30 ~ 15:00','Kid schedule',true);
 h=rep(h,'한 반 최대 15명 · 총 4개 반','15명 기준 · 총 4개 반 운영','class heading',true);
