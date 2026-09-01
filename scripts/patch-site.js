@@ -1,6 +1,6 @@
 const fs=require('fs');
 const FILE='index.html';
-const CANON='https://vietnam-camp-hcmc.netlify.app/nhatrang.html';
+const CANON='https://vietnam-camp-nt.netlify.app/';
 function rep(s,a,b,label,all=false){if(!s.includes(a))throw new Error('Missing patch target: '+label);return all?s.split(a).join(b):s.replace(a,b)}
 function clarifyCampHeader(h){
   h=h.replace(/2027 WINTER(?! CAMP)/g,'2027 WINTER CAMP');
@@ -10,7 +10,8 @@ function clarifyCampHeader(h){
   return h;
 }
 let h=fs.readFileSync(FILE,'utf8');
-h=rep(h,'https://YOUR-DOMAIN-HERE/nhatrang.html',CANON,'canonical',true);
+h=h.replace(/<link rel="canonical" href="[^"]*">/,`<link rel="canonical" href="${CANON}">`);
+h=h.replace(/<meta property="og:url" content="[^"]*">/,`<meta property="og:url" content="${CANON}">`);
 h=clarifyCampHeader(h);
 h=rep(h,'08:30 ~ 16:45','08:30 ~ 16:30','AVE schedule',true);
 h=rep(h,'08:30 ~ 15:40','08:30 ~ 15:00','Kid schedule',true);
@@ -28,5 +29,5 @@ const support=`<section class="school-life" aria-labelledby="nt-life-title"><div
 h=rep(h,'<!-- ============ PRICE ============ -->',support+'<!-- ============ PRICE ============ -->','stay support');
 h=h.replace(/나트랑 별도 브로셔가 없어[^<\n]*/g,'');
 fs.writeFileSync(FILE,h);
-fs.writeFileSync('robots.txt','User-agent: *\nAllow: /\n\nSitemap: https://vietnam-camp-hcmc.netlify.app/sitemap.xml\n');
-console.log('Patched Nha Trang 2027 content.');
+fs.writeFileSync('robots.txt',`User-agent: *\nAllow: /\n\nSitemap: ${CANON}sitemap.xml\n`);
+console.log('Patched standalone Nha Trang 2027 content.');
