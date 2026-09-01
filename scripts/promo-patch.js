@@ -17,13 +17,20 @@ const STYLE=`<style id="earlybird-2027-styles">
 
 const BLOCK=`<section id="earlybird-2027" class="earlybird-2027" aria-labelledby="earlybird-title-nt"><div class="wrap"><div class="earlybird-2027__box"><div class="earlybird-2027__top"><div><div class="earlybird-2027__label">EDUWING EARLY BIRD</div><h2 id="earlybird-title-nt">2027 겨울캠프 얼리버드</h2></div><div class="earlybird-2027__period">9월 1일 ~ 10월 31일까지</div></div><div class="earlybird-2027__grid"><div class="earlybird-2027__item"><b>한 가족당 US$100 할인</b><span>얼리버드 기간 내 등록 가족 기준</span></div><div class="earlybird-2027__item"><b>형제·자매 각 US$50 추가 할인</b><span>형제·자매 동반 등록 시 추가 적용</span></div></div><p class="earlybird-2027__example">예: 자녀 2명 가족 — 가족 US$100 + 형제 할인 각 US$50 = 총 US$200 할인</p></div></div></section>`;
 
+function insertBlock(html){
+  const price='<!-- ============ PRICE ============ -->';
+  if(html.includes(price)) return html.replace(price,BLOCK+'\n'+price);
+  const inquiry=/<section\b(?=[^>]*\bid=["']inquiry["'])/i;
+  if(inquiry.test(html)) return html.replace(inquiry,BLOCK+'\n<section');
+  if(html.includes('</main>')) return html.replace('</main>',BLOCK+'\n</main>');
+  return html+BLOCK;
+}
+
 let html=fs.readFileSync('index.html','utf8');
 html=html.replace(/<section id="earlybird-2027"[\s\S]*?<\/section>/,'');
 html=html.replace(/선착순\s*10가족\s*(?:US)?\$?200\s*할인/g,'얼리버드 할인');
 if(!html.includes('id="earlybird-2027-styles"')) html=html.replace('</head>',STYLE+'\n</head>');
-const marker='<!-- ============ PRICE ============ -->';
-if(!html.includes(marker)) throw new Error('PRICE marker not found');
-html=html.replace(marker,BLOCK+'\n'+marker);
+html=insertBlock(html);
 if(!html.includes('9월 1일 ~ 10월 31일까지')) throw new Error('Early bird block missing');
 fs.writeFileSync('index.html',html);
 console.log('Applied 2027 winter early-bird update to Nha Trang.');
