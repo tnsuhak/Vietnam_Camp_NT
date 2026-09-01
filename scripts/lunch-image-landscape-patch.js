@@ -3,33 +3,17 @@ const fs = require('fs');
 const FILE = 'index.html';
 let html = fs.readFileSync(FILE, 'utf8');
 
-const lunchStart = html.indexOf('점심');
-const snackNear = lunchStart >= 0 ? html.indexOf('간식', lunchStart) : -1;
-if (lunchStart < 0 || snackNear < 0 || snackNear - lunchStart > 500) {
-  throw new Error('Could not find the Nha Trang lunch/snack section');
-}
+const cssTag = '<link id="tns-lunch-landscape-css" rel="stylesheet" href="/lunch-rotate.css">';
+const jsTag = '<script id="tns-lunch-landscape-js" defer src="/lunch-rotate.js"></script>';
 
-const imgStart = html.indexOf('<img', snackNear);
-if (imgStart < 0 || imgStart - snackNear > 16000) {
-  throw new Error('Could not find the lunch photo near the lunch/snack section');
-}
-const imgEnd = html.indexOf('>', imgStart);
-if (imgEnd < 0) throw new Error('Lunch image tag is incomplete');
+html = html.replace(/<link\b[^>]*id=(["'])tns-lunch-landscape-css\1[^>]*>\s*/gi, '');
+html = html.replace(/<script\b[^>]*id=(["'])tns-lunch-landscape-js\1[^>]*>[\s\S]*?<\/script>\s*/gi, '');
 
-let tag = html.slice(imgStart, imgEnd + 1);
-if (/\bclass\s*=\s*["'][^"']*["']/i.test(tag)) {
-  tag = tag.replace(/\bclass\s*=\s*(["'])([^"']*)\1/i, (m, q, classes) => `class=${q}${classes} tns-lunch-landscape-img${q}`);
-} else {
-  tag = tag.replace(/^<img\b/i, '<img class="tns-lunch-landscape-img"');
-}
-html = html.slice(0, imgStart) + tag + html.slice(imgEnd + 1);
+if (html.includes('</head>')) html = html.replace('</head>', cssTag + '\n</head>');
+else html = cssTag + '\n' + html;
 
-html = html.replace(/<style\b[^>]*id=(["'])tns-lunch-landscape-styles\1[^>]*>[\s\S]*?<\/style>\s*/gi, '');
-const styles = `<style id="tns-lunch-landscape-styles">
-.tns-lunch-landscape-img{display:block!important;width:75%!important;height:auto!important;max-width:none!important;max-height:none!important;object-fit:contain!important;transform:rotate(90deg)!important;transform-origin:center center!important;margin:-12.5% auto!important}
-</style>`;
-if (!html.includes('</head>')) throw new Error('Missing </head> while adding lunch photo rotation style');
-html = html.replace('</head>', styles + '\n</head>');
+if (html.includes('</body>')) html = html.replace('</body>', jsTag + '\n</body>');
+else html += '\n' + jsTag;
 
 fs.writeFileSync(FILE, html);
-console.log('Rotated the Nha Trang lunch photo 90 degrees into landscape orientation.');
+console.log('Added the Nha Trang lunch photo landscape assets.');
