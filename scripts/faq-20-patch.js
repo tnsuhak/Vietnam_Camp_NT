@@ -19,15 +19,15 @@ const NT=[
 ['객실 청소는 얼마나 자주 해주나요?','Meliá 객실은 주 3회 하우스키핑이 진행되는 것으로 안내되어 있습니다.'],
 ['현지에서 문의할 수 있는 데스크가 있나요?','캠프 전용 Help Desk를 통해 현지 생활, 학교, 숙소 관련 문의를 지원하는 방식이 안내되어 있습니다.'],
 ['아이 등·하교 차량이 있나요?','자녀 등·하교에 캠프 전용 스쿨버스를 운영하는 것으로 안내되어 있습니다.'],
-['세탁 서비스도 이용할 수 있나요?','유료 세탁 서비스 이용이 가능한 것으로 안내되어 있습니다.'],
 ['보호자 프로그램도 있나요?','학부모 대상 주 1회 시티투어가 안내되어 있으며, 자녀 수업 시간 동안 보호자가 나트랑 일정을 즐길 수 있도록 구성되어 있습니다.'],
 ['주말 여행이나 골프 예약도 도움받을 수 있나요?','주말 가족여행과 골프 등 선택 일정의 예약 안내를 지원하는 것으로 안내되어 있습니다.'],
 ['아이가 아프면 어떻게 하나요?','현재 프로그램 안내에는 한국어로 소통 가능한 병원 동행 및 현지 지원 내용이 포함되어 있습니다. 실제 긴급상황 대응 범위와 절차는 출국 전 최종 안내를 확인해야 합니다.'],
-['항공권과 출국은 단체 출국인가요?','현재 제공된 자료에는 단체 지정 항공편 또는 개별 출국 여부가 명시되어 있지 않습니다. 공항 픽업·드랍 지원은 안내되어 있으므로 항공권 예약 전 최종 출국 방식을 확인하는 것이 좋습니다.'],
+['한국에서 출국은 단체 출국인가요?','단체 지정 항공편으로 함께 출국하는 방식이 아니라 가족별 개별 출국입니다. 현지에서는 각 가족의 항공편 도착·출발 시간에 맞춰 공항 픽업과 드롭을 개별로 지원합니다.'],
+['등록 후 학부모 안내방이 만들어지나요?','등록이 완료되면 학부모님과 현지 운영팀이 함께하는 가족별 단체 채팅방을 개설합니다. 해당 방에서 출국 전 OT, 출국 안내, 준비사항을 전달하고 궁금한 점도 계속 질문할 수 있습니다.'],
 ['얼리버드 할인은 어떻게 되나요?','현재 안내된 얼리버드는 9월 1일부터 10월 31일까지이며, 한 가족당 US$100 할인과 형제·자매 1인당 US$50 추가 할인이 안내되어 있습니다.']
 ];
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function faqBlock(items){const details=items.map((x,i)=>`<details><summary>${i+1}. ${esc(x[0])}</summary><div class="faq20__answer">${esc(x[1])}</div></details>`).join('');return `<section id="faq" class="faq20" aria-labelledby="faq-title"><div class="wrap"><div class="sec-head"><p class="eyebrow">FAQ · 20 Questions</p><h2 id="faq-title">자주 묻는 질문 20</h2><p class="lead">나트랑 2027 겨울캠프 상담에서 많이 확인하는 내용을 정리했습니다.</p></div><div class="faq20__list">${details}</div><p class="faq20__note">※ 학교·숙소·프로모션의 잔여 자리와 운영 조건은 변동될 수 있어 등록 시점에 최종 확인합니다.</p></div></section>`;}
 function faqSchema(items){return `<script type="application/ld+json" id="faq20-schema">${JSON.stringify({'@context':'https://schema.org','@type':'FAQPage',mainEntity:items.map(x=>({'@type':'Question',name:x[0],acceptedAnswer:{'@type':'Answer',text:x[1]}}))})}</script>`;}
 function patch(html){if(NT.length!==20)throw new Error('Nha Trang FAQ must contain exactly 20 items');const block=faqBlock(NT);const byId=/<section\b(?=[^>]*\bid=["']faq["'])[^>]*>[\s\S]*?<\/section>/i;const byMarker=/<!--\s*=+\s*FAQ\s*=+\s*-->[\s\S]*?(?=<!--\s*=+\s*[A-Z][A-Z\s&\/-]*\s*=+\s*-->)/i;if(byId.test(html))html=html.replace(byId,block);else if(byMarker.test(html))html=html.replace(byMarker,'<!-- ============ FAQ ============ -->\n'+block+'\n');else throw new Error('Could not locate Nha Trang FAQ section');if(!html.includes('id="faq20-styles"'))html=html.replace('</head>',STYLE+'\n</head>');html=html.replace(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi,m=>m.includes('FAQPage')?'':m);html=html.replace('</head>',faqSchema(NT)+'\n</head>');const section=html.match(/<section\b(?=[^>]*\bid=["']faq["'])[^>]*>[\s\S]*?<\/section>/i);const count=section?(section[0].match(/<details>/g)||[]).length:0;if(count!==20)throw new Error('Nha Trang rendered FAQ count is '+count+', expected 20');return html;}
-let html=fs.readFileSync('index.html','utf8');html=patch(html);fs.writeFileSync('index.html',html);console.log('Normalized Nha Trang FAQ to exactly 20 items.');
+let html=fs.readFileSync('index.html','utf8');html=patch(html);fs.writeFileSync('index.html',html);console.log('Updated Nha Trang FAQ with individual departure, airport transfer and parent chat/OT guidance.');
