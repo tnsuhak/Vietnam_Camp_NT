@@ -1,0 +1,46 @@
+const fs=require('fs');
+const FILE='index.html';
+const CANON='https://vietnam-camp-nt.netlify.app/';
+
+function rep(s,a,b,all=false){
+  if(!s.includes(a)) return s;
+  return all ? s.split(a).join(b) : s.replace(a,b);
+}
+function clarifyCampHeader(h){
+  h=h.replace(/2027 WINTER(?! CAMP)/g,'2027 WINTER CAMP');
+  h=h.replace(/2027\s*<em>Winter<\/em>/g,'2027 <em>Winter Camp</em>');
+  h=h.replace(/2027 Winter(?! Camp)/g,'2027 Winter Camp');
+  h=h.replace(/>\s*호치민 캠프\s*→\s*</g,'>호치민 캠프도 보기 →<');
+  return h;
+}
+
+let h=fs.readFileSync(FILE,'utf8');
+h=h.replace(/<link rel="canonical" href="[^"]*">/,`<link rel="canonical" href="${CANON}">`);
+h=h.replace(/<meta property="og:url" content="[^"]*">/,`<meta property="og:url" content="${CANON}">`);
+h=clarifyCampHeader(h);
+
+h=rep(h,'08:30 ~ 16:45','08:30 ~ 16:30',true);
+h=rep(h,'08:30 ~ 15:40','08:30 ~ 15:00',true);
+h=rep(h,'한 반 최대 15명 · 총 4개 반','15명 기준 · 총 4개 반 운영',true);
+h=rep(h,'한 반 최대 15명','15명 기준 · 4개 반 운영',true);
+h=rep(h,'한 반 정원은 최대 15명입니다.','15명 기준으로 총 4개 반을 운영하며, 모집 인원에 따라 반 구성은 조정될 수 있습니다.',true);
+
+const kid=`<details><summary>6. 유치원생도 가능한가요?</summary><div class="a">\n        <strong>가능합니다.</strong> 4~6세는 Kid Castle International Kindergarten으로 배정되어 08:30 ~ 15:00 운영됩니다.`;
+const kid2=`<details><summary>6. 유치원생도 가능한가요?</summary><div class="a">\n        <strong>가능합니다.</strong> 4~6세(2024년생~2022년생)는 Kid Castle International Kindergarten으로 배정되어 08:30 ~ 15:00 운영됩니다. 각 반은 26명 기준이며 원어민 교사와 이중언어 현지 보조교사 2~3명이 함께 운영합니다. 캠프 참가자만 별도 분리하는 방식이 아니라 기존 재학생과 같은 반에서 생활하며, 캐나다 교육 프로그램을 기반으로 수업합니다.`;
+h=rep(h,kid,kid2);
+
+const css=`<style id="field-video-styles">.field-video{padding:44px 0;background:var(--paper-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.field-video__box{max-width:900px;margin:0 auto}.field-video video{display:block;width:100%;background:#061728;border-radius:18px;box-shadow:var(--shadow)}.field-video__meta{margin-top:14px}.field-video__meta h3{font-size:19px}.field-video__meta p{margin:6px 0 0;color:var(--muted);font-size:13.5px}.school-life{padding:52px 0;background:#fff}.school-life .facts{margin-top:22px}</style>`;
+if(!h.includes('id="field-video-styles"')) h=h.replace('</head>',css+'</head>');
+
+const vids=`<section class="field-video" aria-labelledby="ave-video-title"><div class="wrap field-video__box"><p class="eyebrow">Previous programme footage</p><video controls playsinline preload="metadata" src="/media/nha-trang-ave-2026.mp4" aria-label="2026 나트랑 AVE 프로그램 현장 영상"></video><div class="field-video__meta"><h3 id="ave-video-title">2026 나트랑 AVE 프로그램 현장</h3><p>지난 실제 프로그램에서 촬영한 영상입니다. 2027 겨울 프로그램의 학교·수업 환경을 이해하기 위한 참고 영상입니다.</p></div></div></section><section class="field-video" aria-labelledby="preschool-video-title" style="background:#fff"><div class="wrap field-video__box"><p class="eyebrow">Previous preschool footage</p><video controls playsinline preload="metadata" src="/media/nha-trang-preschool-2026.mp4" aria-label="2026 나트랑 유아 프로그램 현장 영상"></video><div class="field-video__meta"><h3 id="preschool-video-title">2026 나트랑 유아 프로그램 현장 영상</h3><p>영상에는 당시 운영 브랜드가 표시될 수 있습니다. 현재 2027 Kid Castle 프로그램의 수업 환경을 참고하는 현장 자료로 봐 주세요.</p></div></div></section>`;
+const dayMarker='<!-- ============ DAY FLOW ============ -->';
+if(!h.includes('aria-labelledby="ave-video-title"') && h.includes(dayMarker)) h=h.replace(dayMarker,vids+dayMarker);
+
+const support=`<section class="school-life" aria-labelledby="nt-life-title"><div class="wrap"><div class="sec-head"><p class="eyebrow">Stay & family support</p><h2 id="nt-life-title">아이 수업뿐 아니라,<br>가족의 2~4주 생활까지.</h2></div><div class="facts"><div class="fact"><h4><span>Housekeeping</span>주 3회 객실 청소</h4><p>Meliá Vinpearl Empire 객실은 주 3회 하우스키핑이 진행되며 별도 요청 시 추가 청소를 상담할 수 있습니다.</p></div><div class="fact"><h4><span>Help Desk</span>캠프 전용 Help Desk</h4><p>현지 생활 안내, 유료 세탁 서비스, 학교·생활 관련 문의를 지원합니다.</p></div><div class="fact"><h4><span>Transport</span>전용 스쿨버스</h4><p>자녀 등·하교에 캠프 전용 차량을 운영해 보호자의 매일 이동 부담을 줄입니다.</p></div><div class="fact"><h4><span>Parent Programme</span>학부모 시티투어·주말 예약</h4><p>학부모 주 1회 시티투어와 주말 가족여행·골프 예약 안내 등 선택 일정의 현지 지원을 제공합니다.</p></div></div></div></section>`;
+const priceMarker='<!-- ============ PRICE ============ -->';
+if(!h.includes('id="nt-life-title"') && h.includes(priceMarker)) h=h.replace(priceMarker,support+priceMarker);
+
+h=h.replace(/나트랑 별도 브로셔가 없어[^<\n]*/g,'');
+fs.writeFileSync(FILE,h);
+fs.writeFileSync('robots.txt',`User-agent: *\nAllow: /\n\nSitemap: ${CANON}sitemap.xml\n`);
+console.log('Patched standalone Nha Trang 2027 content safely.');
